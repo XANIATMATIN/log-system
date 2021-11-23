@@ -2,7 +2,7 @@
     "name": "matin-utils/log-system",
     "description": "a utility for managing logs",
     "type": "library",
-    "license": "Matin Int Group Licence",
+    "license": "MIT",
     "authors": [
         {
             "name": "aghaie",
