@@ -3,7 +3,6 @@
 namespace MatinUtils\LogSystem;
 
 use Exception;
-use MatinUtils\EasySocket\Client;
 
 class LogSystem
 {
@@ -210,7 +209,7 @@ class LogSystem
         }
 
         $postFields = json_encode($postFields);
-        if (!$this->socketClient->notLive($postFields)) {
+        if (!$this->socketClient->send($postFields)) {
             $this->httpLug('warning', 'Socket lug failed. message ->> ' . $message, $data);
         }
     }
@@ -230,15 +229,14 @@ class LogSystem
                     return 'socket';
                 }
             } else {
-                if (class_exists(Client::class)) {
                     $host = config('lug.easySocket.host');
                     $port = config('lug.easySocket.port');
                     if (!empty($host) && !empty($port)) {
-                        $this->socketClient = new Client($host, $port);
+                        $this->socketClient = new SocketClient($host, $port);
                         if ($this->socketClient->isConnected) {
                             return 'socket';
                         }
-                    }
+                    
                 }
             }
         }
