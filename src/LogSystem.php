@@ -44,7 +44,9 @@ class LogSystem
             'project' => env('LOG_SERVICE_NAME', ''),
             'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
             'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
-            'ip' => request()->ip() ?? '-'
+            'requestIp' => request()->ip() ?? '-',
+            'requestUrl' => request()->fullUrl(),
+            'serverIp' => gethostbyname(gethostname())
         ], $this->common);
 
 
@@ -128,7 +130,9 @@ class LogSystem
             'project' => env('LOG_SERVICE_NAME', ''),
             'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
             'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
-            'ip' => request()->ip() ?? '-'
+            'requestIp' => request()->ip() ?? '-',
+            'requestUrl' => request()->fullUrl(),
+            'serverIp' => gethostbyname(gethostname())
         ], $this->common)];
 
         foreach ($data as $key => $item) {
@@ -190,7 +194,9 @@ class LogSystem
                     'project' => env('LOG_SERVICE_NAME', ''),
                     'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
                     'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
-                    'ip' => request()->ip() ?? '-'
+                    'requestIp' => request()->ip() ?? '-',
+                    'requestUrl' => request()->fullUrl() ?? '-',
+                    'serverIp' => gethostbyname(gethostname()) ?? '-'
                 ],
                 $this->common
             ),
