@@ -22,7 +22,13 @@ function lugDebug($message, $data = [])
 		$stack[] = "$file:$line";
 	}
 	$data['stack'] = $stack;
-	return lug('error', $message, $data, 'http');
+	return lug('error', $message, $data);
+}
+
+
+function lugHttp($message = 'Messageless', $data = [])
+{
+	return lug('info', $message, $data, 'http');
 }
 
 function lugError($message, $data = [])
