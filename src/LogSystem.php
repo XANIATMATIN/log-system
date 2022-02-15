@@ -235,14 +235,13 @@ class LogSystem
                     return 'socket';
                 }
             } else {
-                    $host = config('lug.easySocket.host');
-                    $port = config('lug.easySocket.port');
-                    if (!empty($host) && !empty($port)) {
-                        $this->socketClient = new SocketClient($host, $port);
-                        if ($this->socketClient->isConnected) {
-                            return 'socket';
-                        }
-                    
+                $host =  config('lug.easySocket.host');
+                $port =  config('lug.easySocket.port', 0);
+                if (!empty($host)) {
+                    $this->socketClient = new SocketClient($host, $port);
+                    if ($this->socketClient->isConnected) {
+                        return 'socket';
+                    }
                 }
             }
         }
