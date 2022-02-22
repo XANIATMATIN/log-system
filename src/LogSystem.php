@@ -197,8 +197,6 @@ class LogSystem
             'message' => $message,
             'type' => $type
         ];
-
-        app('log')->info($postFields['info']);
         foreach ($data as $key => $item) {
             try {
                 $postFields['info']['serialize'][$key] = serialize($item);
