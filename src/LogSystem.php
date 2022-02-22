@@ -41,12 +41,10 @@ class LogSystem
     {
         $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[2];
         $postFields = array_merge([
+            'lugVia' => 'Http',
             'project' => env('LOG_SERVICE_NAME', ''),
             'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
             'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
-            'requestIp' => request()->ip() ?? '-',
-            'requestUrl' => request()->fullUrl(),
-            'serverIp' => gethostbyname(gethostname())
         ], $this->common);
 
 
@@ -126,13 +124,10 @@ class LogSystem
 
         $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[3];
         $postFields = ['info' => array_merge([
-            'sentVia' => 'Http',
+            'lugVia' => 'Http',
             'project' => env('LOG_SERVICE_NAME', ''),
             'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
-            'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
-            'requestIp' => request()->ip() ?? '-',
-            'requestUrl' => request()->fullUrl(),
-            'serverIp' => gethostbyname(gethostname())
+            'line' => $data['line'] ?? $stack['line'] ?? 'no_line'
         ], $this->common)];
 
         foreach ($data as $key => $item) {
@@ -190,13 +185,10 @@ class LogSystem
         $postFields = [
             'info' => array_merge(
                 [
-                    'sentVia' => 'Socket',
+                    'lugVia' => 'Socket',
                     'project' => env('LOG_SERVICE_NAME', ''),
                     'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
-                    'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
-                    'requestIp' => request()->ip() ?? '-',
-                    'requestUrl' => request()->fullUrl() ?? '-',
-                    'serverIp' => gethostbyname(gethostname()) ?? '-'
+                    'line' => $data['line'] ?? $stack['line'] ?? 'no_line'
                 ],
                 $this->common
             ),
@@ -206,6 +198,7 @@ class LogSystem
             'type' => $type
         ];
 
+        app('log')->info($postFields['info']);
         foreach ($data as $key => $item) {
             try {
                 $postFields['info']['serialize'][$key] = serialize($item);
