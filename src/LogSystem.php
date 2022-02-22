@@ -45,6 +45,7 @@ class LogSystem
             'project' => env('LOG_SERVICE_NAME', ''),
             'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
             'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
+            'serverIp' => gethostbyname(gethostname()) ?? '-'
         ], $this->common);
 
 
@@ -127,7 +128,8 @@ class LogSystem
             'lugVia' => 'Http',
             'project' => env('LOG_SERVICE_NAME', ''),
             'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
-            'line' => $data['line'] ?? $stack['line'] ?? 'no_line'
+            'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
+            'serverIp' => gethostbyname(gethostname()) ?? '-'
         ], $this->common)];
 
         foreach ($data as $key => $item) {
@@ -188,7 +190,8 @@ class LogSystem
                     'lugVia' => 'Socket',
                     'project' => env('LOG_SERVICE_NAME', ''),
                     'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
-                    'line' => $data['line'] ?? $stack['line'] ?? 'no_line'
+                    'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
+                    'serverIp' => gethostbyname(gethostname()) ?? '-'
                 ],
                 $this->common
             ),
