@@ -19,7 +19,7 @@ class LogSystem
 
     public function getPID()
     {
-        $pid = request()->headers->get('pid');
+        $pid = request()->headers->get('pid') ?? request('pid');
         if (empty($pid)) {
             request()->headers->set('pid', $pid = uniqid());
         }
