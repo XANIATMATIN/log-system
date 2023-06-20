@@ -224,19 +224,15 @@ class LogSystem
     {
         $sendType = $preferedSendType == 'http' ? 'http' : config('lug.sendType', 'http');
         if ($sendType == 'socket') {
-            if (!empty($this->socketClient)) {
-                if (($this->socketClient->isConnected)) {
-                    return 'socket';
-                }
-            } else {
+            if (empty($this->socketClient) || !$this->socketClient->isConnected) {
                 $host =  config('lug.easySocket.host');
                 $port =  config('lug.easySocket.port', 0);
                 if (!empty($host)) {
                     $this->socketClient = new SocketClient($host, $port);
-                    if ($this->socketClient->isConnected) {
-                        return 'socket';
-                    }
                 }
+            }
+            if (($this->socketClient->isConnected)) {  ///> checking again bc sometimes even after re-connection the connection is still unavailable
+                return 'socket';
             }
         }
         return 'http';
