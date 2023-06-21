@@ -207,8 +207,6 @@ class LogSystem
                 $postFields['info']['serialize'][$key] = serialize('exception: ' . $exception->getMessage());
             }
         }
-
-        $postFields = json_encode($postFields);
         if (!$this->socketClient->send($postFields)) {
             $this->httpLug('warning', 'Socket lug failed. message ->> ' . $message, $data);
         }
