@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "matin-utils/easy-socket": "dev-dev"
+        "matin-utils/easy-socket": "dev-main"
     },
     "minimum-stability": "dev",
     "extra": {
