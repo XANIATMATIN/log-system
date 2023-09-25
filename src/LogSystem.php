@@ -81,7 +81,7 @@ class LogSystem
         }
         $pid = $this->getPID();
         $options = [
-            CURLOPT_URL => env('LOG_HOST', 'http://log.api') . "/multi-log/$pid",
+            CURLOPT_URL => env('LOG_HOST', 'http://log.api') . "/multi-log/$pid/". env('LOG_APPLICATION'),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 0,
@@ -140,7 +140,7 @@ class LogSystem
             }
         }
         $options = [
-            CURLOPT_URL => env('LOG_HOST', 'http://log.api') . sprintf('/log/%s/%s/%s?%s', $pid, $type, microtime(true), http_build_query(['message' => $message])),
+            CURLOPT_URL => env('LOG_HOST', 'http://log.api') . sprintf('/log/%s/%s/%s?%s', $pid, $type, microtime(true), http_build_query(['token' => env('LOG_APPLICATION', ''), 'message' => $message])),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 0,
@@ -195,6 +195,7 @@ class LogSystem
                 ],
                 $this->common
             ),
+            'appToken' => env('LOG_APPLICATION', ''),
             'pid' => $pid,
             'time' => microtime(true),
             'message' => $message,
