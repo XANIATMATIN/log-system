@@ -6,13 +6,10 @@ use Exception;
 
 class LogSystem
 {
-    protected $lugs, $socketClient, $common = [];
+    protected $lugs, $socketClient, $sendType, $common = [];
 
-    public function __construct($pid = null)
+    public function __construct($pid = '')
     {
-        if (empty($pid)) {
-            $pid = $this->getPID();
-        }
         $this->setPID($pid);
         $this->sendType = config('lug.sendType', 'http');
     }
@@ -21,7 +18,7 @@ class LogSystem
     {
         $pid = request()->headers->get('pid') ?? request('pid');
         if (empty($pid)) {
-            request()->headers->set('pid', $pid = uniqid());
+            $pid = $this->setPID(uniqid());
         }
         return $pid;
     }
@@ -31,8 +28,12 @@ class LogSystem
         $this->common[$name] = $value;
     }
 
-    public function setPID($pid)
+    public function setPID($pid = '')
     {
+        $pid = str_replace('{','', $pid);
+        if (strlen($pid) < 3) {
+            $pid = uniqid();
+        }
         request()->headers->set('pid', $pid);
         return $pid;
     }
