@@ -10,7 +10,7 @@ class LogSystem
 
     public function __construct($pid = '')
     {
-        $this->setPID($pid);
+        $this->setPID($this->getPID());
         $this->sendType = config('lug.sendType', 'http');
     }
 
