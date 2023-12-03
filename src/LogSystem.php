@@ -141,7 +141,7 @@ class LogSystem
             }
         }
         $options = [
-            CURLOPT_URL => env('LOG_HOST', 'http://log.api') . sprintf('/log/%s/%s/%s?%s', $pid, $type, microtime(true), http_build_query(['token' => env('LOG_APPLICATION', ''), 'message' => $message])),
+            CURLOPT_URL => $url = env('LOG_HOST', 'http://log.api') . sprintf('/log/%s/%s/%s/%s?%s', $pid, $type, env('LOG_APPLICATION', ''), microtime(true), http_build_query(['message' => $message])),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 0,
@@ -169,7 +169,7 @@ class LogSystem
         if ($response != 'OK' && $type != 'lug') {
             app('log')->error('singlelug Error', ['pid' => $this->getPID(), 'response' => base64_encode($response ?? ''), 'error' => $err ?? '']);
             if (!str_starts_with($exceptionMessage ?? '', 'cURL Error #:Operation timed out after')) {
-                $this->lug('lug', "Lug Error, couldn't send lugs.", ['response' => $response, 'postFields' => $postFields]);
+                $this->lug('lug', "Lug Error, couldn't send lugs.", ['response' => $response, 'postFields' => $postFields, 'url' => $url ]);
             }
             return false;
         }
