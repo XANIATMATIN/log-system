@@ -30,7 +30,7 @@ class LogSystem
 
     public function setPID($pid = '')
     {
-        $pid = str_replace('{','', $pid);
+        $pid = str_replace('{', '', $pid);
         if (strlen($pid) < 3) {
             $pid = uniqid();
         }
@@ -82,7 +82,7 @@ class LogSystem
         }
         $pid = $this->getPID();
         $options = [
-            CURLOPT_URL => env('LOG_HOST', 'http://log.api') . "/multi-log/$pid/". env('LOG_APPLICATION'),
+            CURLOPT_URL => env('LOG_HOST', 'http://log.api') . "/multi-log/$pid/" . env('LOG_APPLICATION'),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 0,
@@ -169,7 +169,7 @@ class LogSystem
         if ($response != 'OK' && $type != 'lug') {
             app('log')->error('singlelug Error', ['pid' => $this->getPID(), 'response' => base64_encode($response ?? ''), 'error' => $err ?? '']);
             if (!str_starts_with($exceptionMessage ?? '', 'cURL Error #:Operation timed out after')) {
-                $this->lug('lug', "Lug Error, couldn't send lugs.", ['response' => $response, 'postFields' => $postFields, 'url' => $url ]);
+                $this->lug('lug', "Lug Error, couldn't send lugs.", ['response' => $response, 'postFields' => $postFields, 'url' => $url]);
             }
             return false;
         }
@@ -189,6 +189,7 @@ class LogSystem
             'info' => array_merge(
                 [
                     'lugVia' => 'Socket',
+                    'lugSockConfs' => config('lug.easySocket.host') . '-' . config('lug.easySocket.port', 0),
                     'project' => env('LOG_SERVICE_NAME', ''),
                     'file' =>  $data['file'] ?? $stack['file'] ?? 'no_file',
                     'line' => $data['line'] ?? $stack['line'] ?? 'no_line',
