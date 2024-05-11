@@ -221,6 +221,13 @@ class LogSystem
         return $this->{$sendType . 'Lug'}($type, $message, $data);
     }
 
+    public function closeSocket()
+    {
+        if (($this->socketClient->isConnected)) {  ///> checking again bc sometimes even after re-connection the connection is still unavailable
+            return $this->socketClient->closeSocket();
+        }
+    }
+
     protected function sendType($preferedSendType)
     {
         $sendType = $preferedSendType == 'http' ? 'http' : config('lug.sendType', 'http');
