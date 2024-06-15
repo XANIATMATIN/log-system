@@ -229,13 +229,18 @@ class LogSystem
 
     protected function saveInfile($type, $message, $data)
     {
-        $pid = $this->getPID();
-        $date = Carbon::now()->format('y-m-d');
-        $filepath = storage_path("logs/misseLugs/$date");
-        if (!file_exists($filepath)) {
-            mkdir($filepath, 0777, true);
+        try {
+            $pid = $this->getPID();
+            $date = Carbon::now()->format('y-m-d');
+            $filepath = storage_path("logs/misseLugs/$date");
+            if (!file_exists($filepath)) {
+                mkdir($filepath, 0777, true);
+            }
+            file_put_contents("$filepath/$pid:" . uniqid(), json_encode(['type' => $type, 'message' => $message, 'data' => $data]));
+        } catch (\Throwable $th) {
+            app('log')->error("Could not save missed lugd. pid $pid . $message");
+            app('log')->error($th->getMessage());
         }
-        file_put_contents("$filepath/$pid:" . uniqid(), json_encode(['type' => $type, 'message' => $message, 'data' => $data]));
     }
 
     public function lug(string $type, string $message, array $data = [], string $preferedSendType = 'socket')
