@@ -2,6 +2,7 @@
 
 namespace MatinUtils\LogSystem;
 
+use Carbon\Carbon;
 use Exception;
 
 class LogSystem
@@ -159,18 +160,18 @@ class LogSystem
         } catch (\Throwable $th) {
             $exceptionMessage = $th->getMessage();
             app('log')->error("singlelug cURL Exception #:" . $exceptionMessage);
+            $this->saveInfile($type, $message, $data);
+            return false;
         }
 
         if ($err = curl_error($curl)) {
+            $this->saveInfile($type, $message, $data);
             app('log')->error("singlelug cURL Error #:" . $err);
             return false;
         }
 
         if ($response != 'OK' && $type != 'lug') {
-            app('log')->error('singlelug Error', ['pid' => $this->getPID(), 'response' => base64_encode($response ?? ''), 'error' => $err ?? '']);
-            if (!str_starts_with($exceptionMessage ?? '', 'cURL Error #:Operation timed out after')) {
-                $this->lug('lug', "Lug Error, couldn't send lugs.", ['response' => $response, 'postFields' => $postFields, 'url' => $url]);
-            }
+            $this->saveInfile($type, $message, $data);
             return false;
         }
         return [curl_getinfo($curl, CURLINFO_HTTP_CODE), $response];
@@ -210,9 +211,31 @@ class LogSystem
                 $postFields['info']['serialize'][$key] = serialize('exception: ' . $exception->getMessage());
             }
         }
-        if (!$this->socketClient->send($postFields)) {
-            $this->httpLug('warning', 'Socket lug failed. message ->> ' . $message, $data);
+        if (empty($this->socketClient) || !$this->socketClient->isConnected) {
+            $host =  config('lug.easySocket.host');
+            $port =  config('lug.easySocket.port', 0);
+            if (!empty($host)) {
+                $this->socketClient = new SocketClient($host, $port);
+            }
         }
+        if (($this->socketClient->isConnected)) {  ///> checking again bc sometimes even after re-connection the connection is still unavailable
+            if (!$this->socketClient->send($postFields)) {
+                $this->saveInfile($type, $message, $data);
+            }
+        } else {
+            $this->saveInfile($type, $message, $data);
+        }
+    }
+
+    protected function saveInfile($type, $message, $data)
+    {
+        $pid = $this->getPID();
+        $date = Carbon::now()->format('y-m-d');
+        $filepath = storage_path("logs/misseLugs/$date");
+        if (!file_exists($filepath)) {
+            mkdir($filepath, 0777, true);
+        }
+        file_put_contents("$filepath/$pid:" . uniqid(), json_encode(['type' => $type, 'message' => $message, 'data' => $data]));
     }
 
     public function lug(string $type, string $message, array $data = [], string $preferedSendType = 'socket')
@@ -230,19 +253,6 @@ class LogSystem
 
     protected function sendType($preferedSendType)
     {
-        $sendType = $preferedSendType == 'http' ? 'http' : config('lug.sendType', 'http');
-        if ($sendType == 'socket') {
-            if (empty($this->socketClient) || !$this->socketClient->isConnected) {
-                $host =  config('lug.easySocket.host');
-                $port =  config('lug.easySocket.port', 0);
-                if (!empty($host)) {
-                    $this->socketClient = new SocketClient($host, $port);
-                }
-            }
-            if (($this->socketClient->isConnected)) {  ///> checking again bc sometimes even after re-connection the connection is still unavailable
-                return 'socket';
-            }
-        }
-        return 'http';
+        return $preferedSendType == 'http' ? 'http' : config('lug.sendType', 'http');
     }
 }
