@@ -117,12 +117,13 @@ class LogSystem
         return [curl_getinfo($curl, CURLINFO_HTTP_CODE), $response];
     }
 
-    public function httpLug(string $type, string $message, array $data = [])
+    public function httpLug(string $type, string $message, array $data = [], $forceTime = null)
     {
         if (strlen($message) > 255) {
             $data['message'] = $message;
             $message = "Message is too long, please look at Data";
         }
+        $time = empty($forceTime) ? microtime(true) : $forceTime;
         $pid = $this->getPID();
 
         $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[3];
@@ -142,7 +143,7 @@ class LogSystem
             }
         }
         $options = [
-            CURLOPT_URL => $url = env('LOG_HOST', 'http://log.api') . sprintf('/log/%s/%s/%s/%s?%s', $pid, $type, env('LOG_APPLICATION', ''), microtime(true), http_build_query(['message' => $message])),
+            CURLOPT_URL => $url = env('LOG_HOST', 'http://log.api') . sprintf('/log/%s/%s/%s/%s?%s', $pid, $type, env('LOG_APPLICATION', ''), $time, http_build_query(['message' => $message])),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 0,
@@ -177,12 +178,13 @@ class LogSystem
         return [curl_getinfo($curl, CURLINFO_HTTP_CODE), $response];
     }
 
-    public function socketLug(string $type, string $message, array $data = [])
+    public function socketLug(string $type, string $message, array $data = [], $forceTime = null)
     {
         if (strlen($message) > 255) {
             $data['message'] = $message;
             $message = "Message is too long, please look at Data";
         }
+        $time = empty($forceTime) ? microtime(true) : $forceTime;
         $pid = $this->getPID();
 
         $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[3];
@@ -200,7 +202,7 @@ class LogSystem
             ),
             'appToken' => env('LOG_APPLICATION', ''),
             'pid' => $pid,
-            'time' => microtime(true),
+            'time' => $time,
             'message' => $message,
             'type' => $type
         ];
@@ -227,7 +229,7 @@ class LogSystem
         }
     }
 
-    protected function saveInfile($type, $message, $data)
+    public function saveInfile($type, $message, $data)
     {
         try {
             $pid = $this->getPID();
@@ -236,17 +238,17 @@ class LogSystem
             if (!file_exists($filepath)) {
                 mkdir($filepath, 0777, true);
             }
-            file_put_contents("$filepath/$pid:" . uniqid(), json_encode(['type' => $type, 'message' => $message, 'data' => $data]));
+            file_put_contents("$filepath/$pid:" . uniqid(), json_encode(['time' => microtime(true), 'type' => $type, 'message' => $message, 'data' => $data]));
         } catch (\Throwable $th) {
             app('log')->error("Could not save missed lugd. pid $pid . $message");
             app('log')->error($th->getMessage());
         }
     }
 
-    public function lug(string $type, string $message, array $data = [], string $preferedSendType = 'socket')
+    public function lug(string $type, string $message, array $data = [], $forceTime = null, string $preferedSendType = 'socket')
     {
-        $sendType = $this->sendType($preferedSendType);
-        return $this->{$sendType . 'Lug'}($type, $message, $data);
+        $sendType = $preferedSendType == 'http' ? 'http' : config('lug.sendType', 'http');
+        return $this->{$sendType . 'Lug'}($type, $message, $data, $forceTime);
     }
 
     public function closeSocket()
@@ -254,10 +256,5 @@ class LogSystem
         if (($this->socketClient->isConnected)) {  ///> checking again bc sometimes even after re-connection the connection is still unavailable
             return $this->socketClient->closeSocket();
         }
-    }
-
-    protected function sendType($preferedSendType)
-    {
-        return $preferedSendType == 'http' ? 'http' : config('lug.sendType', 'http');
     }
 }
